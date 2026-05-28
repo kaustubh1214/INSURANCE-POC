@@ -1,0 +1,95 @@
+version: "3.9"
+
+# ============================================================
+# InsureBridge — Docker Compose (Full Stack)
+# ============================================================
+#
+# Services:
+#   backend  — FastAPI on port 8000
+#   frontend — React/Vite (nginx) on port 3000
+#
+# Usage:
+#   docker-compose up --build          # Start all services
+#   docker-compose up backend          # Start backend only
+#   docker-compose logs -f backend     # Follow backend logs
+#   docker-compose exec backend bash   # Shell into backend
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # Backend — FastAPI
+  # ----------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: insurebridge-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app                    # Live reload in dev
+      - insurebridge_uploads:/app/uploads # Persistent uploads
+      - insurebridge_db:/app/data         # SQLite DB persistence
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:////app/data/insurebridge.db
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-changeme_in_production_32chars_min}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DEBUG=${DEBUG:-true}
+      - UPLOAD_DIR=/app/uploads
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@insurebridge.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Admin@123456}
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - insurebridge-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ----------------------------------------------------------
+  # Frontend — React + Vite (dev server in dev, nginx in prod)
+  # ----------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: insurebridge-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - insurebridge-net
+
+
+# ----------------------------------------------------------
+# Networks
+# ----------------------------------------------------------
+networks:
+  insurebridge-net:
+    driver: bridge
+
+
+# ----------------------------------------------------------
+# Volumes
+# ----------------------------------------------------------
+volumes:
+  insurebridge_uploads:
+    driver: local
+  insurebridge_db:
+    driver: local

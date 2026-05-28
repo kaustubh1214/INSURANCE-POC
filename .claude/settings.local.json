@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(copy .env.example .env)",
+      "Bash(venv\\\\Scripts\\\\pip install *)",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

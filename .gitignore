@@ -1,0 +1,73 @@
+# ── Python / Backend ──────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.env
+.env.*
+!.env.example
+venv/
+venv_*/
+env/
+ENV/
+.venv/
+
+# Database (never commit the live DB)
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads / user files
+backend/uploads/
+backend/app/uploads/
+
+# Logs
+*.log
+*.err
+server.log
+server.err
+
+# Alembic (keep migrations, not the compiled cache)
+backend/alembic/versions/__pycache__/
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.docker/
+
+# ── Misc ──────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+.cache/
+coverage/
+.pytest_cache/
+htmlcov/
+
+# ── Never commit these ─────────────────────────────────────────────────────────
+push-to-github.bat
